@@ -258,6 +258,26 @@ export function renderApp() {
 
   let editingTaskId = null;
 
+  // Close and cancel buttons
+function closeTaskModal() {
+  modal.dismiss();
+  editingTaskId = null;
+  form.reset();
+
+  document.querySelector('#task-modal-title').textContent = 'Add Study Task';
+  document.querySelector('#save-task-button').innerHTML = `
+    <ion-icon name="save-outline" slot="start"></ion-icon>
+    Save Task
+  `;
+  document.querySelector('#task-priority').value = 'Medium';
+}
+
+document.querySelector('#close-modal-button')
+  .addEventListener('click', closeTaskModal);
+
+document.querySelector('#cancel-task-button')
+  .addEventListener('click', closeTaskModal);
+
   // Open and close the task modal
 document.querySelector('#add-task-button').addEventListener('click', () => {
   editingTaskId = null;
