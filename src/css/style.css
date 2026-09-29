@@ -1,0 +1,98 @@
+:root {
+  --ion-color-primary: #5267d9;
+  --ion-color-primary-rgb: 82, 103, 217;
+  --ion-color-primary-contrast: #ffffff;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+.welcome-section {
+  margin-bottom: 24px;
+}
+
+.welcome-section h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.welcome-section p {
+  color: #777;
+  line-height: 1.5;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-grid ion-card {
+  margin: 0;
+  border-radius: 14px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.06);
+}
+
+.summary-grid ion-card-content {
+  text-align: center;
+}
+
+.summary-grid ion-icon {
+  font-size: 28px;
+}
+
+.summary-grid p {
+  color: #777;
+  margin: 10px 0;
+}
+
+.summary-grid h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tasks-section {
+  margin-top: 30px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-heading h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tasks-section ion-card {
+  margin: 0;
+  border-radius: 14px;
+}
+
+.empty-message {
+  color: #777;
+  text-align: center;
+  padding: 20px 0;
+}
+
+@media (max-width: 600px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-section h1 {
+    font-size: 22px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
