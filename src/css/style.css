@@ -96,3 +96,98 @@ body {
     flex-direction: column;
   }
 }
+
+
+/* Add Task form */
+#task-modal {
+  --width: 100%;
+  --max-width: 550px;
+  --height: 90%;
+  --border-radius: 18px;
+}
+
+#task-modal ion-content {
+  --background: #f8f9fc;
+}
+
+#task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#task-form ion-item {
+  --background: #ffffff;
+  --border-radius: 10px;
+  --border-color: #e5e7eb;
+  --border-style: solid;
+  --border-width: 1px;
+  margin-bottom: 4px;
+}
+
+#task-form ion-input,
+#task-form ion-textarea,
+#task-form ion-select {
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.task-card {
+  margin: 12px 0;
+  border-radius: 14px;
+}
+
+.task-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.task-card-heading h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.task-subject {
+  color: #6b7280;
+  margin: 0 0 12px;
+}
+
+.task-due-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.task-due-date ion-icon {
+  font-size: 18px;
+}
+
+@media (max-width: 480px) {
+  #task-modal {
+    --height: 95%;
+    --border-radius: 14px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions ion-button {
+    width: 100%;
+    margin-inline: 0;
+  }
+}
