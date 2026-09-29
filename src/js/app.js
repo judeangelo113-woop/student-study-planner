@@ -119,6 +119,18 @@ export function renderApp() {
                 </ion-card>
               </div>
             </section>
+
+            <section id="schedule-section" style="display: none;">
+                <div class="section-heading">
+                    <h2>Study Schedule</h2>
+                </div>
+
+                <p>View your study tasks by their due dates.</p>
+
+                <div id="schedule-list">
+                    <!-- Scheduled tasks will appear here -->
+                </div>
+            </section>
           </main>
         </ion-content>
       </div>
@@ -359,31 +371,45 @@ document.querySelector('#task-list').addEventListener('click', async (event) => 
 document.querySelectorAll('[data-page]').forEach((item) => {
   item.addEventListener('click', () => {
     const page = item.dataset.page;
+
     const welcome = document.querySelector('.welcome-section');
     const summary = document.querySelector('.summary-grid');
     const tasksSection = document.querySelector('.tasks-section');
-    const heading = tasksSection.querySelector('.section-heading h2');
+    const scheduleSection = document.querySelector('#schedule-section');
+    const pageContent = document.querySelector('#page-content');
 
-    // Show dashboard sections or the task list
-    welcome.style.display = page === 'dashboard' ? '' : 'none';
-    summary.style.display = page === 'dashboard' ? '' : 'none';
+    // Hide all main sections first
+    welcome.style.display = 'none';
+    summary.style.display = 'none';
+    tasksSection.style.display = 'none';
+    scheduleSection.style.display = 'none';
 
-    if (page === 'dashboard' || page === 'tasks') {
+    if (page === 'dashboard') {
+      welcome.style.display = '';
+      summary.style.display = '';
       tasksSection.style.display = '';
-      heading.textContent =
-        page === 'tasks' ? 'My Tasks' : 'Upcoming Tasks';
-
+      tasksSection.querySelector('.section-heading h2').textContent =
+        'Upcoming Tasks';
       updateDashboard();
-    } else {
-      tasksSection.style.display = 'none';
-      welcome.style.display = 'none';
-      summary.style.display = 'none';
+    }
 
-      document.querySelector('#page-content').innerHTML = `
-        <section class="welcome-section">
-          <h1>${page === 'schedule' ? 'Schedule' : 'Settings'}</h1>
-          <p>This page will be developed in a later phase.</p>
-        </section>
+    else if (page === 'tasks') {
+      tasksSection.style.display = '';
+      tasksSection.querySelector('.section-heading h2').textContent =
+        'My Tasks';
+      updateDashboard();
+    }
+
+    else if (page === 'schedule') {
+      scheduleSection.style.display = '';
+      renderSchedule();
+    }
+
+    else if (page === 'settings') {
+      welcome.style.display = '';
+      welcome.innerHTML = `
+        <h1>Settings</h1>
+        <p>Settings will be developed in the next step.</p>
       `;
     }
   });
@@ -402,6 +428,57 @@ function updateDashboard() {
   document.querySelector('#pending-tasks').textContent = pending;
 
   renderTaskList();
+}
+
+function renderSchedule() {
+  const scheduleList = document.querySelector('#schedule-list');
+
+  if (!scheduleList) return;
+
+  if (tasks.length === 0) {
+    scheduleList.innerHTML = `
+      <ion-card>
+        <ion-card-content class="empty-message">
+          No scheduled tasks yet. Add a task with a due date!
+        </ion-card-content>
+      </ion-card>
+    `;
+    return;
+  }
+
+  const sortedTasks = [...tasks].sort((a, b) =>
+    a.dueDate.localeCompare(b.dueDate)
+  );
+
+  scheduleList.innerHTML = sortedTasks.map(task => `
+    <ion-card class="task-card">
+      <ion-card-content>
+        <div class="task-card-heading">
+          <div>
+            <h3>${escapeHTML(task.title)}</h3>
+            <p class="task-subject">${escapeHTML(task.subject)}</p>
+          </div>
+
+          <ion-badge color="${
+            task.status === 'Completed' ? 'success' :
+            task.priority === 'High' ? 'danger' :
+            task.priority === 'Medium' ? 'warning' : 'success'
+          }">
+            ${escapeHTML(task.status)}
+          </ion-badge>
+        </div>
+
+        <p class="task-due-date">
+          <ion-icon name="calendar-outline"></ion-icon>
+          Due: ${escapeHTML(task.dueDate)}
+        </p>
+
+        <ion-badge color="medium">
+          ${escapeHTML(task.priority)} Priority
+        </ion-badge>
+      </ion-card-content>
+    </ion-card>
+  `).join('');
 }
 
 function renderTaskList() {
