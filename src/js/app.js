@@ -1,5 +1,27 @@
+import { save } from "ionicons/icons";
 
-let tasks = [];
+const STORAGE_KEY = 'studentStudyPlannerTasks';
+
+let tasks = loadTasks();
+
+function loadTasks() {
+  try {
+    const savedTasks = localStorage.getItem(STORAGE_KEY);
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  } catch (error) {
+    console.error('Error loading tasks:', error);
+    return [];
+  }
+}
+
+function saveTasks() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    console.log('Tasks saved:', tasks);
+  } catch (error) {
+    console.error('Error saving tasks:', error);
+  }
+}
 
 export function renderApp() {
   const app = document.querySelector('#app');
@@ -240,6 +262,7 @@ form.addEventListener('submit', async (event) => {
     task.priority = priority;
     task.updatedAt = new Date().toISOString();
 
+    saveTasks();
     await modal.dismiss();
     await showMessage('Your study task has been updated!');
 } else {
@@ -256,6 +279,8 @@ form.addEventListener('submit', async (event) => {
     };
 
     tasks.push(task);
+    saveTasks();
+    updateDashboard();
 
     await modal.dismiss();
     await showMessage('Your study task has been added!');
@@ -281,6 +306,7 @@ document.querySelector('#task-list').addEventListener('click', async (event) => 
   if (action === 'complete') {
     task.status = task.status === 'Completed' ? 'Pending' : 'Completed';
     task.updatedAt = new Date().toISOString();
+    saveTasks();
     updateDashboard();
   }
 
@@ -316,6 +342,7 @@ document.querySelector('#task-list').addEventListener('click', async (event) => 
         role: 'destructive',
         handler: () => {
           tasks = tasks.filter(item => item.id !== taskId);
+          saveTasks();
           updateDashboard();
         }
       }
