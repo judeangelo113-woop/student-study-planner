@@ -131,6 +131,35 @@ export function renderApp() {
                     <!-- Scheduled tasks will appear here -->
                 </div>
             </section>
+
+            <section id="settings-section" style="display: none;">
+                <div class="section-heading">
+                    <h2>Settings</h2>
+                </div>
+
+                <ion-card>
+                    <ion-card-header>
+                    <ion-card-title>About the App</ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content>
+                    <p>Student Study Planner</p>
+                    <p>Version 1.0.0</p>
+                    <p>Organize your tasks and manage your study schedule.</p>
+                    </ion-card-content>
+                </ion-card>
+
+                <ion-card>
+                    <ion-card-header>
+                    <ion-card-title>Data Management</ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content>
+                    <p>Remove all saved study tasks from this device.</p>
+                    <ion-button id="clear-tasks-btn" color="danger" expand="block">
+                        Clear All Tasks
+                    </ion-button>
+                    </ion-card-content>
+                </ion-card>
+            </section>
           </main>
         </ion-content>
       </div>
@@ -367,6 +396,35 @@ document.querySelector('#task-list').addEventListener('click', async (event) => 
   }
 });
 
+// Clear all tasks
+document.querySelector('#clear-tasks-btn').addEventListener('click', async () => {
+  const alert = document.createElement('ion-alert');
+
+  alert.header = 'Clear All Tasks';
+  alert.message = 'Are you sure you want to delete all your study tasks? This action cannot be undone.';
+  alert.buttons = [
+    {
+      text: 'Cancel',
+      role: 'cancel'
+    },
+    {
+      text: 'Clear All',
+      role: 'destructive',
+      handler: () => {
+        tasks = [];
+        saveTasks();
+        updateDashboard();
+        renderSchedule();
+      }
+    }
+  ];
+
+  document.querySelector('ion-app').appendChild(alert);
+  await alert.present();
+  await alert.onDidDismiss();
+  alert.remove();
+});
+
 // Navigation
 document.querySelectorAll('[data-page]').forEach((item) => {
   item.addEventListener('click', () => {
@@ -406,11 +464,8 @@ document.querySelectorAll('[data-page]').forEach((item) => {
     }
 
     else if (page === 'settings') {
-      welcome.style.display = '';
-      welcome.innerHTML = `
-        <h1>Settings</h1>
-        <p>Settings will be developed in the next step.</p>
-      `;
+    const settingsSection = document.querySelector('#settings-section');
+    settingsSection.style.display = '';
     }
   });
 });
