@@ -105,7 +105,7 @@ export function renderApp() {
       <ion-modal id="task-modal">
         <ion-header>
           <ion-toolbar color="primary">
-            <ion-title>Add Study Task</ion-title>
+            <ion-title id="task-modal-title">Add Study Task</ion-title>
             <ion-buttons slot="end">
               <ion-button id="close-modal-button">Close</ion-button>
             </ion-buttons>
@@ -193,60 +193,174 @@ export function renderApp() {
   const modal = document.querySelector('#task-modal');
   const form = document.querySelector('#task-form');
 
+  let editingTaskId = null;
+
   // Open and close the task modal
-  document.querySelector('#add-task-button').addEventListener('click', () => {
-    form.reset();
-    document.querySelector('#task-priority').value = 'Medium';
-    modal.present();
-  });
+document.querySelector('#add-task-button').addEventListener('click', () => {
+  editingTaskId = null;
+  form.reset();
 
-  document.querySelector('#close-modal-button')
-    .addEventListener('click', () => modal.dismiss());
+  document.querySelector('#task-modal-title').textContent = 'Add Study Task';
+  document.querySelector('#save-task-button').innerHTML = `
+    <ion-icon name="save-outline" slot="start"></ion-icon>
+    Save Task
+  `;
+  document.querySelector('#task-priority').value = 'Medium';
 
-  document.querySelector('#cancel-task-button')
-    .addEventListener('click', () => modal.dismiss());
+  modal.present();
+});
 
   // Save a new task
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
 
-    const title = document.querySelector('#task-title').value.trim();
-    const subject = document.querySelector('#task-subject').value.trim();
-    const description = document.querySelector('#task-description').value.trim();
-    const dueDate = document.querySelector('#task-due-date').value;
-    const priority = document.querySelector('#task-priority').value;
+  const title = document.querySelector('#task-title').value.trim();
+  const subject = document.querySelector('#task-subject').value.trim();
+  const description = document.querySelector('#task-description').value.trim();
+  const dueDate = document.querySelector('#task-due-date').value;
+  const priority = document.querySelector('#task-priority').value;
 
-    if (!title || !subject || !dueDate) {
-      await showMessage('Please fill in the title, subject, and due date.');
+  if (!title || !subject || !dueDate) {
+    await showMessage('Please fill in the title, subject, and due date.');
+    return;
+  }
+
+  if (editingTaskId) {
+    const task = tasks.find(task => task.id === editingTaskId);
+
+    if (!task) {
+      await showMessage('Task not found.');
       return;
     }
 
+    task.title = title;
+    task.subject = subject;
+    task.description = description;
+    task.dueDate = dueDate;
+    task.priority = priority;
+    task.updatedAt = new Date().toISOString();
+
+    await modal.dismiss();
+    await showMessage('Your study task has been updated!');
+} else {
     const task = {
-      id: crypto.randomUUID(),
-      title,
-      subject,
-      description,
-      dueDate,
-      priority,
-      status: 'Pending',
-      createdAt: new Date().toISOString()
+    id: crypto.randomUUID(),
+    title,
+    subject,
+    description,
+    dueDate,
+    priority,
+    status: 'Pending',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
     };
 
     tasks.push(task);
-    updateDashboard();
+
     await modal.dismiss();
-    form.reset();
-    document.querySelector('#task-priority').value = 'Medium';
-
     await showMessage('Your study task has been added!');
-  });
+}
 
-  // Navigation placeholder for the next development step
-  document.querySelectorAll('[data-page]').forEach((item) => {
-    item.addEventListener('click', () => {
-      console.log(`Selected page: ${item.dataset.page}`);
-    });
+editingTaskId = null;
+form.reset();
+document.querySelector('#task-priority').value = 'Medium';
+updateDashboard();
+});
+
+document.querySelector('#task-list').addEventListener('click', async (event) => {
+  const button = event.target.closest('ion-button[data-action]');
+
+  if (!button) return;
+
+  const taskId = button.dataset.id;
+  const action = button.dataset.action;
+  const task = tasks.find(task => task.id === taskId);
+
+  if (!task) return;
+
+  if (action === 'complete') {
+    task.status = task.status === 'Completed' ? 'Pending' : 'Completed';
+    task.updatedAt = new Date().toISOString();
+    updateDashboard();
+  }
+
+  if (action === 'edit') {
+    editingTaskId = task.id;
+
+    document.querySelector('#task-modal-title').textContent = 'Edit Study Task';
+    document.querySelector('#task-title').value = task.title;
+    document.querySelector('#task-subject').value = task.subject;
+    document.querySelector('#task-description').value = task.description;
+    document.querySelector('#task-due-date').value = task.dueDate;
+    document.querySelector('#task-priority').value = task.priority;
+
+    document.querySelector('#save-task-button').innerHTML = `
+      <ion-icon name="save-outline" slot="start"></ion-icon>
+      Update Task
+    `;
+
+    await modal.present();
+  }
+
+  if (action === 'delete') {
+    const alert = document.createElement('ion-alert');
+    alert.header = 'Delete Task';
+    alert.message = `Are you sure you want to delete "${escapeHTML(task.title)}"?`;
+    alert.buttons = [
+      {
+        text: 'Cancel',
+        role: 'cancel'
+      },
+      {
+        text: 'Delete',
+        role: 'destructive',
+        handler: () => {
+          tasks = tasks.filter(item => item.id !== taskId);
+          updateDashboard();
+        }
+      }
+    ];
+
+    document.querySelector('ion-app').appendChild(alert);
+    await alert.present();
+    await alert.onDidDismiss();
+    alert.remove();
+  }
+});
+
+// Navigation
+document.querySelectorAll('[data-page]').forEach((item) => {
+  item.addEventListener('click', () => {
+    const page = item.dataset.page;
+    const welcome = document.querySelector('.welcome-section');
+    const summary = document.querySelector('.summary-grid');
+    const tasksSection = document.querySelector('.tasks-section');
+    const heading = tasksSection.querySelector('.section-heading h2');
+
+    // Show dashboard sections or the task list
+    welcome.style.display = page === 'dashboard' ? '' : 'none';
+    summary.style.display = page === 'dashboard' ? '' : 'none';
+
+    if (page === 'dashboard' || page === 'tasks') {
+      tasksSection.style.display = '';
+      heading.textContent =
+        page === 'tasks' ? 'My Tasks' : 'Upcoming Tasks';
+
+      updateDashboard();
+    } else {
+      tasksSection.style.display = 'none';
+      welcome.style.display = 'none';
+      summary.style.display = 'none';
+
+      document.querySelector('#page-content').innerHTML = `
+        <section class="welcome-section">
+          <h1>${page === 'schedule' ? 'Schedule' : 'Settings'}</h1>
+          <p>This page will be developed in a later phase.</p>
+        </section>
+      `;
+    }
   });
+});
 
   updateDashboard();
 }
@@ -289,10 +403,13 @@ function renderTaskList() {
             <h3>${escapeHTML(task.title)}</h3>
             <p class="task-subject">${escapeHTML(task.subject)}</p>
           </div>
+
           <ion-badge color="${
             task.priority === 'High' ? 'danger' :
             task.priority === 'Medium' ? 'warning' : 'success'
-          }">${escapeHTML(task.priority)}</ion-badge>
+          }">
+            ${escapeHTML(task.priority)}
+          </ion-badge>
         </div>
 
         ${task.description
@@ -304,7 +421,46 @@ function renderTaskList() {
           <ion-icon name="calendar-outline"></ion-icon>
           Due: ${escapeHTML(task.dueDate)}
         </p>
-        <ion-badge color="medium">${escapeHTML(task.status)}</ion-badge>
+
+        <ion-badge color="${
+          task.status === 'Completed' ? 'success' : 'medium'
+        }">
+          ${escapeHTML(task.status)}
+        </ion-badge>
+
+        <div class="task-actions">
+          <ion-button
+            size="small"
+            color="${task.status === 'Completed' ? 'medium' : 'success'}"
+            data-action="complete"
+            data-id="${task.id}">
+            <ion-icon
+              name="${task.status === 'Completed' ? 'refresh-outline' : 'checkmark-circle-outline'}"
+              slot="start">
+            </ion-icon>
+            ${task.status === 'Completed' ? 'Undo' : 'Complete'}
+          </ion-button>
+
+          <ion-button
+            size="small"
+            fill="outline"
+            color="primary"
+            data-action="edit"
+            data-id="${task.id}">
+            <ion-icon name="create-outline" slot="start"></ion-icon>
+            Edit
+          </ion-button>
+
+          <ion-button
+            size="small"
+            fill="outline"
+            color="danger"
+            data-action="delete"
+            data-id="${task.id}">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
       </ion-card-content>
     </ion-card>
   `).join('');
